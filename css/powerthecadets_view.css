@@ -29,3 +29,11 @@ a.ptc-meal-available-link {
   border-radius: 5px;
   background-color: #732222;
 }
+
+/* Fix strange overlap of "next" and "prev" buttons in view/calendar pager. */
+.view .date-nav-wrapper .date-prev {
+  right: 90px;
+}
+.view .date-nav-wrapper .date-next {
+  width: 90px;
+}
