@@ -98,7 +98,10 @@ function powerthecadets_civicrm_buildForm($formName, $form) {
 function powerthecadets_civicrm_postProcess($formName, &$form) {
   if (
     // Only for the powerthecadets contribution page.
-    $formName == 'CRM_Contribute_Form_Contribution_Main'
+    (
+      $formName == 'CRM_Contribute_Form_Contribution_Main'
+      || $formName == 'CRM_Contribute_Form_Contribution_Confirm'
+    )
     && $form->_id == POWERTHECADETS_CONTRIBUTION_PAGE_ID
     // Only if the contribution has already been created.
     && $form->_contributionID
