@@ -1,0 +1,156 @@
+<?php
+
+// Constants for civicrm Entity IDs. Note, there are more IDs in _powerthecadets_getMealOptions().
+define('POWERTHECADETS_CONTRIBUTION_PAGE_ID', 96);
+define('POWERTHECADETS_PRICESET_ID', 516);
+define('POWERTHECADETS_CUSTOM_FIELD_ID_DATE', 57);
+define('POWERTHECADETS_CUSTOM_FIELD_ID_MESSAGE', 59);
+define('POWERTHECADETS_CUSTOM_FIELD_ID_DISPLAY', 243);
+define('POWERTHECADETS_CALENDAR_PATH', 'cadets/power/calendar');
+
+/**
+ * Get an array of price set field option values for the Meal price set field.
+ */
+function _powerthecadets_getMealOptions() {
+  return  array(
+    'breakfast' => '1383',
+    'lunch' => '1384',
+    'dinner' => '1385',
+    'snack' => '1386',
+    'full_day' => '1387',
+  );
+}
+
+/**
+ * Set a variable in the session.
+ *
+ * TODO: Seems clumsy using $_SESSION; probably better to use a more limited scope.
+ *
+ * @param string $var The variable name.
+ * @param mixed $value The value to store.
+ */
+function _powerthecadets_session_set($var, $value) {
+  $_SESSION['powerthecadets'][$var] = $value;
+}
+
+/**
+ * Retrieve the value of a session variable. See TODO in _powerthecadets_session_set().
+ *
+ * @param string $var The variable name.
+ * @return mixed The stored value.
+ */
+function _powerthecadets_session_get($var) {
+  return $_SESSION['powerthecadets'][$var];
+}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function powerthecadets_views_pre_render(&$view) {
+  // Before displaying the 'tour_calendar' view, add some js and css resources.
+  if ($view->name == 'tour_calendar') {
+    drupal_add_js(drupal_get_path('module', 'powerthecadets') . '/js/powerthecadets_view.js');
+    drupal_add_css(drupal_get_path('module', 'powerthecadets') . '/css/powerthecadets_view.css');
+  }
+}
+
+/**
+ * Implements hook_civicrm_buildForm().
+ */
+function powerthecadets_civicrm_buildForm($formName, $form) {
+  if (
+    // Only for the powerthecadets contribution page.
+    $formName == 'CRM_Contribute_Form_Contribution_Main'
+    && $form->_id == POWERTHECADETS_CONTRIBUTION_PAGE_ID
+  ) {
+    if (!$form->_flagSubmitted) {
+      // Only when this form is not being submitted.
+      $ptc_nid = $_GET['ptc_nid'];
+      _powerthecadets_session_set('ptc_nid', $ptc_nid);
+
+      $ptc_meal_id = $_GET['ptc_meal_id'];
+      if (empty($ptc_nid) || empty($ptc_meal_id)) {
+        drupal_goto(POWERTHECADETS_CALENDAR_PATH);
+      }
+
+      // Load the node and get the date; set that as the default date field value.
+      $pct_node = node_load($ptc_nid);
+      $date = $pct_node->field_date[LANGUAGE_NONE][0]['value'];
+      $defaults['custom_' . POWERTHECADETS_CUSTOM_FIELD_ID_DATE] = $date;
+
+      // Set default price option based on ptc_meal_id.
+      $mealOptions = _powerthecadets_getMealOptions();
+      $defaults['price_' . POWERTHECADETS_PRICESET_ID] = $mealOptions[$ptc_meal_id];
+
+      // Set default values.
+      $form->setDefaults($defaults);
+
+      // Freeze elements:
+      $dateElement = $form->getElement('custom_' . POWERTHECADETS_CUSTOM_FIELD_ID_DATE);
+      $dateElement->freeze();
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_postProcess();
+ */
+function powerthecadets_civicrm_postProcess($formName, &$form) {
+  if (
+    // Only for the powerthecadets contribution page.
+    $formName == 'CRM_Contribute_Form_Contribution_Main'
+    && $form->_id == POWERTHECADETS_CONTRIBUTION_PAGE_ID
+    // Only if the contribution has already been created.
+    && $form->_contributionID
+  ) {
+    // If there's no ptc_nid, somethings broken, so throw an exception.
+    if (empty($ptc_nid = _powerthecadets_session_get('ptc_nid'))) {
+      throw new CRM_Exception('Contribution page ' . POWERTHECADETS_CONTRIBUTION_PAGE_ID . ', could not determine value for ptc_nid.');
+    }
+
+    // Determine the selected price option, so we can know wich *_donor_display
+    // and *_message fields to update in the node.
+    $selectedPriceOptionIds = array_keys($form->_lineItem[$form->_priceSetId]);
+    $selectedPriceOption = $selectedPriceOptionIds[0];
+
+    // Load the node and alter the relevant field values; then save the node.
+    $node = node_load($ptc_nid);
+    $mealOptions = array_flip(_powerthecadets_getMealOptions());
+    $drupalFieldName = "field_{$mealOptions[$selectedPriceOption]}_message";
+    $node->$drupalFieldName[LANGUAGE_NONE][0]['value'] = $form->_submitValues['custom_' . POWERTHECADETS_CUSTOM_FIELD_ID_DISPLAY];
+    $drupalFieldName = "field_{$mealOptions[$selectedPriceOption]}_donor_display";
+    $node->$drupalFieldName[LANGUAGE_NONE][0]['value'] = $form->_submitValues['custom_' . POWERTHECADETS_CUSTOM_FIELD_ID_MESSAGE];
+    node_save($node);
+
+  }
+}
+
+/**
+ * Implements hook_civicrm_buildAmount().
+ *
+ */
+function powerthecadets_civicrm_buildAmount($pageType, &$form, &$amount) {
+  if (
+    // Only for the powerthecadets contribution page, when submitting the main form.
+    $pageType == 'contribution'
+    && $form->getVar('_name') == 'Main'
+    && $form->getVar('_id') == POWERTHECADETS_CONTRIBUTION_PAGE_ID
+  ) {
+
+    if ($_GET['ptc_meal_id']) {
+      // Set ptc_meal_id in session, so we can use it later.
+      _powerthecadets_session_set('ptc_meal_id', $_GET['ptc_meal_id']);
+    }
+    $mealId = _powerthecadets_session_get('ptc_meal_id');
+    // Remove irrelevant price options.
+    $mealOptions = _powerthecadets_getMealOptions();
+    foreach ($mealOptions as $key => $value) {
+      if ($mealId != $key) {
+        unset($amount[POWERTHECADETS_PRICESET_ID]['options'][$value]);
+      }
+      else {
+        $amount[POWERTHECADETS_PRICESET_ID]['options'][$value]['is_default'] = 1;
+      }
+    }
+  }
+}

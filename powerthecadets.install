@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the powerthecadets module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function powerthecadets_schema() {}
+
+/**
+ * Implements hook_install().
+ */
+function powerthecadets_install() {}
+
+/**
+ * Implements hook_uninstall().
+ */
+function powerthecadets_uninstall() {
+  }
+
+/**
+ * Implement hook_update_N
+ *
+function powerthecadets_update_1() {}
+ * 
+ */

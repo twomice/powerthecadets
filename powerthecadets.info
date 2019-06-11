@@ -1,0 +1,4 @@
+name = Power the cadets
+description = Special handling for Power the Cadets views and contribution pages.
+core = 7.x
+version = 7.x-0.1

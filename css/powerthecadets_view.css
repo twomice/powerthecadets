@@ -1,0 +1,31 @@
+span.ptc-donor-display-value, span.ptc-donor-message-value {
+  display: none;
+}
+
+.calendar-calendar .week-view .full div.single-day div.weekview,
+.calendar-calendar .month-view .full td.single-day div.monthview {
+  background-color: transparent !important;
+}
+
+div.ptc-meal-button {
+  cursor: default !important;
+}
+
+div.ptc-meal-button-available {
+  background-color: #732222 !important;
+  color: white !important;
+}
+
+div.ptc-meal-button-purchased {
+  background-color: #fcb721 !important;
+  color: black !important;
+}
+
+a.ptc-meal-available-link {
+  margin-top: 5px;
+  display: block;
+  padding: 5px;
+  color: white !important;
+  border-radius: 5px;
+  background-color: #732222;
+}
