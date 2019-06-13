@@ -1,5 +1,5 @@
 (function ($) {
-	$(document).ready(function() {
+  $(document).ready(function() {
     // use qtip plugin to create the tooltip.
     $('div.ptc-meal-button').qtip({
       hide: {
@@ -21,16 +21,16 @@
           var nid = $(el).attr('data-ptc-nid');
           var dateString = $(el).attr('data-ptc-date');
           if (el.hasClass('ptc-meal-button-available')) {
-            msg = '<span class="ptc-tip-meal-available">This meal is available. <a href="/civicrm/contribute/transact?reset=1&id=96&ptc_nid=' + nid + '&ptc_meal_id=' + meal_id + '" class="ptc-meal-available-link">Click here to sponsor '+ meal +' on ' + dateString + '!</a></span>'
+            msg = '<span class="ptc-tip-meal-available"><h2>This meal is available.</h2> <h4><a href="/civicrm/contribute/transact?reset=1&id=96&ptc_nid=' + nid + '&ptc_meal_id=' + meal_id + '" class="ptc-meal-available-link">Click here to sponsor '+ meal +' on ' + dateString + '!</a></span></h4>'
           }
           else {
             var sponsor_name = el.siblings('span.ptc-donor-display-value').html();
             var sponsor_message = el.siblings('span.ptc-donor-message-value').html();
-            msg = '<span class="ptc-tip-meal-sponsored-thanks">Thanks to ' + sponsor_name + ' for sponsoring '+ meal +' on ' + dateString + '!</span> <span class="ptc-meal-sponsored"><span class="ptc-meal-sponsored-message-label">Message:</span> <span class="ptc-meal-sponsored-message-value">' + sponsor_message +'</span>';
+            msg = '<h2><span class="ptc-tip-meal-sponsored-thanks">Thanks to ' + sponsor_name + ' for sponsoring '+ meal +' on ' + dateString + '!</span></h2><h4><span class="ptc-meal-sponsored"><span class="ptc-meal-sponsored-message-label">Message:</br></span> <span class="ptc-meal-sponsored-message-value">' + sponsor_message +'</span></h4>';
           }
           return msg;
         },
       }
     });
-	});
+  });
 })(jQuery);
