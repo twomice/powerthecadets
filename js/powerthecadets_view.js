@@ -1,17 +1,19 @@
 (function ($) {
   $(document).ready(function() {
     // use qtip plugin to create the tooltip.
-    $('div.ptc-meal-button').qtip({
+    var qtipPosition = {
+      my: 'top left',
+      at: 'bottom center',
+      viewport: $(window)
+    };
+    var qtipParams = {
       hide: {
         // Retain the tooltip as long as mouse pointer is on element OR tooltip.
         fixed: true,
         // Wait before hiding tooltip.
         delay: 300
       },
-      position: {
-        my: 'top left',
-        at: 'bottom center'
-      },
+      position: qtipPosition,
       content: {
         text: function(event, api) {
           var msg = "";
@@ -31,6 +33,7 @@
           return msg;
         },
       }
-    });
+    };
+    $('div.ptc-meal-button').qtip(qtipParams);
   });
 })(jQuery);
