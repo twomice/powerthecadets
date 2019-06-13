@@ -37,3 +37,10 @@ a.ptc-meal-available-link {
 .view .date-nav-wrapper .date-next {
   width: 90px;
 }
+
+/* Set city names to a font-size relative to calendar day width.
+   Reference: "Font size as percentage of width" at https://app.asana.com/0/241603776072319/1113153301334740
+*/
+div.views-field-nothing h3 {
+  font-size: 1.25vw;
+}
