@@ -14,6 +14,10 @@
         delay: 300
       },
       position: qtipPosition,
+      style: {
+        classes: 'qtip-bootstrap',
+        def: false
+      },
       content: {
         text: function(event, api) {
           var msg = "";
